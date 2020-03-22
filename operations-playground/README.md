@@ -1,16 +1,10 @@
 # Flink Operations Playground
 
-The Flink operations playground lets you explore and play with [Apache Flink](https://flink.apache.org)'s features to manage and operate stream processing jobs, including
-
-* Observing automatic failure recovery of an application
-* Upgrading and rescaling an application
-* Querying the runtime metrics of an application
-
 It's based on a [docker-compose](https://docs.docker.com/compose/) environment and is super easy to setup.
 
 ## Setup
 
-The operations playground requires a custom Docker image, as well as public images for Flink, Kafka, and ZooKeeper. 
+The operations playground requires a custom Docker image, as well as public images for Flink, Kafka, and ZooKeeper.
 
 The `docker-compose.yaml` file of the operations playground is located in the `operations-playground` directory. Assuming you are at the root directory of the [`flink-playgrounds`](https://github.com/apache/flink-playgrounds) repository, change to the `operations-playground` folder by running
 
@@ -43,8 +37,3 @@ To stop the playground, run the following command
 ```bash
 docker-compose down
 ```
-
-## Further instructions
-
-The playground setup and more detailed instructions are presented in the
-["Getting Started" guide](https://ci.apache.org/projects/flink/flink-docs-release-1.10/getting-started/docker-playgrounds/flink-operations-playground.html) of Flink's documentation.
