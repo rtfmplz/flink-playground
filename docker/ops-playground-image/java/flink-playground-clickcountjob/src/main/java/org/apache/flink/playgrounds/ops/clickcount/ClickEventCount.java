@@ -1,29 +1,10 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.apache.flink.playgrounds.ops.clickcount;
 
-import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.configuration.Configuration;
-import org.apache.flink.metrics.Counter;
 import org.apache.flink.playgrounds.ops.clickcount.functions.BackpressureMap;
 import org.apache.flink.playgrounds.ops.clickcount.functions.ClickEventStatisticsCollector;
 import org.apache.flink.playgrounds.ops.clickcount.functions.CountingAggregator;
+import org.apache.flink.playgrounds.ops.clickcount.functions.MyMetricCounter;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventDeserializationSchema;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatistics;
@@ -35,6 +16,7 @@ import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrderness
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
@@ -55,9 +37,8 @@ import java.util.concurrent.TimeUnit;
  * * "--input-topic": the name of the Kafka Topic to consume {@link ClickEvent}s from
  * * "--output-topic": the name of the Kafka Topic to produce {@link ClickEventStatistics} to
  * * "--bootstrap.servers": comma-separated list of Kafka brokers
+ *
  */
-
-
 public class ClickEventCount {
 
     public static final String CHECKPOINTING_OPTION = "checkpointing";
@@ -71,6 +52,7 @@ public class ClickEventCount {
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
+        configureEnvironment(params, env);
 
         boolean inflictBackpressure = params.has(BACKPRESSURE_OPTION);
 
@@ -81,16 +63,16 @@ public class ClickEventCount {
         kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
         kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "click-event-count");
 
-
         DataStream<ClickEvent> clicks =
                 env.addSource(new FlinkKafkaConsumer<>(inputTopic, new ClickEventDeserializationSchema(), kafkaProps))
                         .name("ClickEvent Source")
+                        .map(new MyMetricCounter())
                         .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<ClickEvent>(Time.of(200, TimeUnit.MILLISECONDS)) {
                             @Override
                             public long extractTimestamp(final ClickEvent element) {
                                 return element.getTimestamp().getTime();
                             }
-                        }).map(new MyMapper());
+                        });
 
         if (inflictBackpressure) {
             // Force a network shuffle so that the backpressure will affect the buffer pools
@@ -135,24 +117,5 @@ public class ClickEventCount {
 
         //disabling Operator chaining to make it easier to follow the Job in the WebUI
         env.disableOperatorChaining();
-    }
-
-    public static final class MyMapper extends RichMapFunction<ClickEvent, ClickEvent> {
-        private transient Counter counter;
-
-        @Override
-        public void open(Configuration config) {
-            this.counter = getRuntimeContext()
-                    .getMetricGroup()
-                    .counter("myCounter");
-        }
-
-        @Override
-        public ClickEvent map(ClickEvent value) throws Exception {
-            System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-            this.counter.inc();
-            return value;
-        }
-
     }
 }

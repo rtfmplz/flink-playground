@@ -29,6 +29,3 @@ state.savepoints.dir: file:///tmp/flink-savepoints-directory
 
 heartbeat.interval: 1000
 heartbeat.timeout: 5000
-
-metrics.reporter.jmx.factory.class: org.apache.flink.metrics.jmx.JMXReporterFactory
-metrics.reporter.jmx.port: 8789
