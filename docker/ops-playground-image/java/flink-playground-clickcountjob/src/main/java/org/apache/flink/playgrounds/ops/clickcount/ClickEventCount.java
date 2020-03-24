@@ -1,10 +1,7 @@
 package org.apache.flink.playgrounds.ops.clickcount;
 
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.playgrounds.ops.clickcount.functions.BackpressureMap;
-import org.apache.flink.playgrounds.ops.clickcount.functions.ClickEventStatisticsCollector;
-import org.apache.flink.playgrounds.ops.clickcount.functions.CountingAggregator;
-import org.apache.flink.playgrounds.ops.clickcount.functions.MyMetricCounter;
+import org.apache.flink.playgrounds.ops.clickcount.functions.*;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventDeserializationSchema;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatistics;
@@ -67,6 +64,7 @@ public class ClickEventCount {
                 env.addSource(new FlinkKafkaConsumer<>(inputTopic, new ClickEventDeserializationSchema(), kafkaProps))
                         .name("ClickEvent Source")
                         .map(new MyMetricCounter())
+                        .map(new MyMetricHistogram())
                         .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<ClickEvent>(Time.of(200, TimeUnit.MILLISECONDS)) {
                             @Override
                             public long extractTimestamp(final ClickEvent element) {

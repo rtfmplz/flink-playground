@@ -15,13 +15,15 @@ public class ClickEvent {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss:SSS")
 	private Date timestamp;
 	private String page;
+	private int id;
 
 	public ClickEvent() {
 	}
 
-	public ClickEvent(final Date timestamp, final String page) {
+	public ClickEvent(final Date timestamp, final String page, final int id) {
 		this.timestamp = timestamp;
 		this.page = page;
+		this.id = id;
 	}
 
 	public Date getTimestamp() {
@@ -40,6 +42,14 @@ public class ClickEvent {
 		this.page = page;
 	}
 
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	@Override
 	public boolean equals(final Object o) {
 		if (this == o) {
@@ -49,12 +59,12 @@ public class ClickEvent {
 			return false;
 		}
 		final ClickEvent that = (ClickEvent) o;
-		return Objects.equals(timestamp, that.timestamp) && Objects.equals(page, that.page);
+		return Objects.equals(timestamp, that.timestamp) && Objects.equals(page, that.page) && Objects.equals(id, that.id);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(timestamp, page);
+		return Objects.hash(timestamp, page, id);
 	}
 
 	@Override
@@ -62,6 +72,7 @@ public class ClickEvent {
 		final StringBuilder sb = new StringBuilder("ClickEvent{");
 		sb.append("timestamp=").append(timestamp);
 		sb.append(", page='").append(page).append('\'');
+		sb.append(", id='").append(id).append('\'');
 		sb.append('}');
 		return sb.toString();
 	}

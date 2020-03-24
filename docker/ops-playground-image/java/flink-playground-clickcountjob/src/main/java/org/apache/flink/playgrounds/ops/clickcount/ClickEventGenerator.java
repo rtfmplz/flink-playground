@@ -82,7 +82,7 @@ public class ClickEventGenerator {
 
 		ClickEvent next() {
 			String page = nextPage();
-			return new ClickEvent(nextTimestamp(page), page);
+			return new ClickEvent(nextTimestamp(page), page, nextPageIndex);
 		}
 
 		private Date nextTimestamp(String page) {
