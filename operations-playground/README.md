@@ -28,8 +28,6 @@ Once you built the Docker image, run the following command to start the playgrou
 docker-compose up -d
 ```
 
-You can check if the playground was successfully started by accessing the WebUI of the Flink cluster at [http://localhost:8081](http://localhost:8081).
-
 ### Stopping the Playground
 
 To stop the playground, run the following command
@@ -37,3 +35,8 @@ To stop the playground, run the following command
 ```bash
 docker-compose down
 ```
+
+## Monitoring
+
+* [Flink Monitoring](http://localhost:8081)
+* [Kafdrop](http://localhost:9000)
