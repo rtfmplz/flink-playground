@@ -6,19 +6,20 @@ import org.apache.flink.metrics.Counter;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 
 public class MyMetricCounter extends RichMapFunction<ClickEvent, ClickEvent> {
-    private transient Counter counter;
 
-    @Override
-    public void open(Configuration config) {
-        this.counter = getRuntimeContext()
-                .getMetricGroup()
-                .counter("MyMetricCounter");
-    }
+  private transient Counter counter;
 
-    @Override
-    public ClickEvent map(ClickEvent value) throws Exception {
-        this.counter.inc();
-        return value;
-    }
+  @Override
+  public void open(Configuration config) {
+    this.counter = getRuntimeContext()
+        .getMetricGroup()
+        .counter("MyMetricCounter");
+  }
+
+  @Override
+  public ClickEvent map(ClickEvent value) throws Exception {
+    this.counter.inc();
+    return value;
+  }
 }
 

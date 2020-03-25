@@ -8,21 +8,22 @@ import org.apache.flink.metrics.Histogram;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 
 public class MyMetricHistogram extends RichMapFunction<ClickEvent, ClickEvent> {
-    private transient Histogram histogram;
 
-    @Override
-    public void open(Configuration config) {
-        com.codahale.metrics.Histogram dropwizardHistogram =
-                new com.codahale.metrics.Histogram(new SlidingWindowReservoir(500));
+  private transient Histogram histogram;
 
-        this.histogram = getRuntimeContext()
-                .getMetricGroup()
-                .histogram("MyMetricHistogram", new DropwizardHistogramWrapper(dropwizardHistogram));
-    }
+  @Override
+  public void open(Configuration config) {
+    com.codahale.metrics.Histogram dropwizardHistogram =
+        new com.codahale.metrics.Histogram(new SlidingWindowReservoir(500));
 
-    @Override
-    public ClickEvent map(ClickEvent value) throws Exception {
-        this.histogram.update(value.getId());
-        return value;
-    }
+    this.histogram = getRuntimeContext()
+        .getMetricGroup()
+        .histogram("MyMetricHistogram", new DropwizardHistogramWrapper(dropwizardHistogram));
+  }
+
+  @Override
+  public ClickEvent map(ClickEvent value) throws Exception {
+    this.histogram.update(value.getId());
+    return value;
+  }
 }
