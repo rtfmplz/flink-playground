@@ -10,6 +10,7 @@ import org.apache.flink.playgrounds.ops.clickcount.functions.MyMetricCounter;
 import org.apache.flink.playgrounds.ops.clickcount.functions.MyMetricHistogram;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventDeserializationSchema;
+import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventSerializationSchema;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatistics;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatisticsSerializationSchema;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -19,6 +20,7 @@ import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrderness
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer.Semantic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
@@ -49,7 +51,8 @@ public class ClickEventCount {
 
   private boolean inflictBackpressure;
   private String inputTopic;
-  private String outputTopic;
+  private String statisticsTopic;
+  private String clickEventTopic;
 
 
   private ClickEventCount(String... args) {
@@ -78,10 +81,12 @@ public class ClickEventCount {
     env.disableOperatorChaining();
 
     inputTopic = params.get("input-topic", "input");
-    outputTopic = params.get("output-topic", "output");
+    statisticsTopic = params.get("output-topic", "output");
     final String brokers = params.get("bootstrap.servers", "localhost:9092");
+    final String consumer = params.get("kafka.consumer", "gary");
     kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
-    kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "click-event-count-" + System.currentTimeMillis());
+    kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, consumer);
+    clickEventTopic = consumer;
   }
 
   private void process() throws Exception {
@@ -107,19 +112,24 @@ public class ClickEventCount {
           .name("Backpressure");
     }
 
+    clicks.addSink(new FlinkKafkaProducer<ClickEvent>(
+        clickEventTopic,
+        new ClickEventSerializationSchema(clickEventTopic),
+        kafkaProps,
+        Semantic.AT_LEAST_ONCE))
+        .name("ClickEvent Sink");
+
     DataStream<ClickEventStatistics> statistics = clicks
         .keyBy(ClickEvent::getPage)
         .timeWindow(WINDOW_SIZE)
-        .aggregate(new CountingAggregator(),
-            new ClickEventStatisticsCollector())
+        .aggregate(new CountingAggregator(), new ClickEventStatisticsCollector())
         .name("ClickEvent Counter");
 
-    statistics
-        .addSink(new FlinkKafkaProducer<>(
-            outputTopic,
-            new ClickEventStatisticsSerializationSchema(outputTopic),
-            kafkaProps,
-            FlinkKafkaProducer.Semantic.AT_LEAST_ONCE))
+    statistics.addSink(new FlinkKafkaProducer<>(
+        statisticsTopic,
+        new ClickEventStatisticsSerializationSchema(statisticsTopic),
+        kafkaProps,
+        FlinkKafkaProducer.Semantic.AT_LEAST_ONCE))
         .name("ClickEventStatistics Sink");
 
     env.execute("Click Event Count");

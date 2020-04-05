@@ -47,14 +47,17 @@ public class ClickEventGenerator {
 
     ClickIterator clickIterator = new ClickIterator();
 
+    int count = 0;
+
     while (true) {
 
       ProducerRecord<byte[], byte[]> record = new ClickEventSerializationSchema(topic).serialize(
-          clickIterator.next(),
+          clickIterator.next(count),
           null);
 
       producer.send(record);
 
+      count = count + 1;
       Thread.sleep(DELAY);
     }
   }
@@ -80,9 +83,9 @@ public class ClickEventGenerator {
       nextPageIndex = 0;
     }
 
-    ClickEvent next() {
+    ClickEvent next(int idx) {
       String page = nextPage();
-      return new ClickEvent(nextTimestamp(page), page, nextPageIndex);
+      return new ClickEvent(nextTimestamp(page), page, idx);
     }
 
     private Date nextTimestamp(String page) {

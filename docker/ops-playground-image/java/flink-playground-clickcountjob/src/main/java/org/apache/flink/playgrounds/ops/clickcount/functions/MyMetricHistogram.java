@@ -23,7 +23,7 @@ public class MyMetricHistogram extends RichMapFunction<ClickEvent, ClickEvent> {
 
   @Override
   public ClickEvent map(ClickEvent value) throws Exception {
-    this.histogram.update(value.getId());
+    this.histogram.update(value.getOffset());
     return value;
   }
 }
