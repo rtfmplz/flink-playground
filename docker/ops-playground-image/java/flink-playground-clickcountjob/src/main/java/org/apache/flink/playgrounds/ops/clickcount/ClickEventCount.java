@@ -23,6 +23,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer.Semantic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 /**
  * A simple streaming job reading {@link ClickEvent}s from Kafka, counting events per 15 seconds and
@@ -84,8 +85,15 @@ public class ClickEventCount {
     statisticsTopic = params.get("output-topic", "output");
     final String brokers = params.get("bootstrap.servers", "localhost:9092");
     final String consumer = params.get("kafka.consumer", "gary");
-    kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
+
     kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, consumer);
+    kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
+
+    // EXACTLY_ONCE
+    kafkaProps.setProperty(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
+    kafkaProps.setProperty(ProducerConfig.ACKS_CONFIG, "all");
+    kafkaProps.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, "300");
+
     clickEventTopic = consumer;
   }
 
@@ -116,21 +124,21 @@ public class ClickEventCount {
         clickEventTopic,
         new ClickEventSerializationSchema(clickEventTopic),
         kafkaProps,
-        Semantic.AT_LEAST_ONCE))
+        Semantic.EXACTLY_ONCE))
         .name("ClickEvent Sink");
 
-    DataStream<ClickEventStatistics> statistics = clicks
-        .keyBy(ClickEvent::getPage)
-        .timeWindow(WINDOW_SIZE)
-        .aggregate(new CountingAggregator(), new ClickEventStatisticsCollector())
-        .name("ClickEvent Counter");
-
-    statistics.addSink(new FlinkKafkaProducer<>(
-        statisticsTopic,
-        new ClickEventStatisticsSerializationSchema(statisticsTopic),
-        kafkaProps,
-        FlinkKafkaProducer.Semantic.AT_LEAST_ONCE))
-        .name("ClickEventStatistics Sink");
+//    DataStream<ClickEventStatistics> statistics = clicks
+//        .keyBy(ClickEvent::getPage)
+//        .timeWindow(WINDOW_SIZE)
+//        .aggregate(new CountingAggregator(), new ClickEventStatisticsCollector())
+//        .name("ClickEvent Counter");
+//
+//    statistics.addSink(new FlinkKafkaProducer<>(
+//        statisticsTopic,
+//        new ClickEventStatisticsSerializationSchema(statisticsTopic),
+//        kafkaProps,
+//        FlinkKafkaProducer.Semantic.AT_LEAST_ONCE))
+//        .name("ClickEventStatistics Sink");
 
     env.execute("Click Event Count");
   }
