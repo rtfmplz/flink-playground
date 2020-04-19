@@ -4,7 +4,7 @@ services:
   client:
     build: ../docker/ops-playground-image
     image: apache/flink-ops-playground:1-FLINK-1.10-scala_2.11
-    # command: "flink run -d -p 2 /opt/ClickCountJob.jar --bootstrap.servers kafka:9092 --checkpointing --event-time"
+    # command: "flink run -d -p 2 /opt/apps/flink-playground-clickcountjob-1-FLINK-1.10_2.11.jar --bootstrap.servers kafka:9092 --checkpointing --event-time"
     command: /bin/bash
     stdin_open: true
     tty: true
@@ -14,6 +14,7 @@ services:
       - kafka
     volumes:
       - ./conf:/opt/flink/conf
+      - ./apps:/opt/apps
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
