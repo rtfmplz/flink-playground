@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <artifactId>flink-playground-example01</artifactId>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+
+        <!-- This improves the out-of-the-box experience in Eclipse by resolving some warnings. -->
+        <plugin>
+          <artifactId>lifecycle-mapping</artifactId>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <action>
+                    <ignore/>
+                  </action>
+                  <pluginExecutionFilter>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <goals>
+                      <goal>shade</goal>
+                    </goals>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <versionRange>[3.0.0,)</versionRange>
+                  </pluginExecutionFilter>
+                </pluginExecution>
+                <pluginExecution>
+                  <action>
+                    <ignore/>
+                  </action>
+                  <pluginExecutionFilter>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <goals>
+                      <goal>testCompile</goal>
+                      <goal>compile</goal>
+                    </goals>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <versionRange>[3.1,)</versionRange>
+                  </pluginExecutionFilter>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+          <groupId>org.eclipse.m2e</groupId>
+          <version>1.0.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+
+      <!-- Java Compiler -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>3.1</version>
+      </plugin>
+
+      <!-- We use the maven-shade plugin to create a fat jar that contains all necessary dependencies. -->
+      <!-- Change the value of <mainClass>...</mainClass> if your program entry point changes. -->
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <!-- Run shade goal on package phase -->
+          <execution>
+            <configuration>
+              <artifactSet>
+                <excludes>
+                  <exclude>org.apache.flink:force-shading</exclude>
+                  <exclude>com.google.code.findbugs:jsr305</exclude>
+                  <exclude>org.slf4j:*</exclude>
+                  <exclude>log4j:*</exclude>
+                </excludes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <!-- Do not copy the signatures in the META-INF folder.
+                  Otherwise, this might cause SecurityExceptions when using the JAR. -->
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.apache.flink.playgrounds.ops.clickcount.Example01</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>3.0.0</version>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <!-- Apache Flink dependencies -->
+    <!-- These dependencies are provided, because they should not be packaged into the JAR file. -->
+    <dependency>
+      <artifactId>flink-java</artifactId>
+      <groupId>org.apache.flink</groupId>
+      <scope>provided</scope>
+      <version>${flink.version}</version>
+    </dependency>
+
+    <dependency>
+      <artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
+      <groupId>org.apache.flink</groupId>
+      <scope>provided</scope>
+      <version>${flink.version}</version>
+    </dependency>
+
+    <!-- Connector dependencies -->
+    <dependency>
+      <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
+      <groupId>org.apache.flink</groupId>
+      <version>${flink.version}</version>
+    </dependency>
+
+    <!-- Logging dependencies -->
+    <!-- These dependencies are excluded from the application JAR by default. -->
+    <dependency>
+      <artifactId>slf4j-log4j12</artifactId>
+      <groupId>org.slf4j</groupId>
+      <scope>runtime</scope>
+      <version>1.7.7</version>
+    </dependency>
+    <dependency>
+      <artifactId>log4j</artifactId>
+      <groupId>log4j</groupId>
+      <scope>runtime</scope>
+      <version>1.2.17</version>
+    </dependency>
+    <dependency>
+      <artifactId>flink-metrics-dropwizard</artifactId>
+      <groupId>org.apache.flink</groupId>
+      <version>1.10.0</version>
+    </dependency>
+  </dependencies>
+  <groupId>org.apache.flink</groupId>
+
+  <licenses>
+    <license>
+      <distribution>repo</distribution>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <modelVersion>4.0.0</modelVersion>
+  <name>flink-playground-example01</name>
+
+  <packaging>jar</packaging>
+
+  <profiles>
+    <profile>
+      <activation>
+        <property>
+          <name>idea.version</name>
+        </property>
+      </activation>
+
+      <dependencies>
+        <dependency>
+          <artifactId>flink-java</artifactId>
+          <groupId>org.apache.flink</groupId>
+          <scope>compile</scope>
+          <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+          <artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
+          <groupId>org.apache.flink</groupId>
+          <scope>compile</scope>
+          <version>${flink.version}</version>
+        </dependency>
+      </dependencies>
+
+      <id>add-dependencies-for-IDEA</id>
+    </profile>
+  </profiles>
+
+  <properties>
+    <flink.version>1.10.0</flink.version>
+    <java.version>1.8</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <scala.binary.version>2.11</scala.binary.version>
+  </properties>
+
+  <scm>
+    <connection>git@github.com:apache/flink-playgrounds.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/flink-playgrounds.git
+    </developerConnection>
+    <url>https://github.com/apache/flink-playgrounds</url>
+  </scm>
+
+  <url>https://flink.apache.org</url>
+
+  <!-- This profile helps to make things run out of the box in IntelliJ -->
+  <!-- Its adds Flink's core classes to the runtime class path. -->
+  <!-- Otherwise they are missing in IntelliJ, because the dependency is 'provided' -->
+  <version>1-FLINK-1.10_2.11</version>
+
+
+</project>

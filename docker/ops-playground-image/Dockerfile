@@ -27,7 +27,6 @@ COPY ./java/flink-playground-clickcountjob /opt/flink-playground-clickcountjob
 WORKDIR /opt/flink-playground-clickcountjob
 RUN mvn clean install
 
-
 ###############################################################################
 # Build Operations Playground Image
 ###############################################################################
