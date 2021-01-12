@@ -68,8 +68,9 @@ client container에 접속해서 `/opt/apps` 하위의 jar를 flink로 실행
 
 ```bash
 docker exec -it operations-playground_client_1 /bin/bash
+flink run -d -p 2 /opt/apps/flink-playground-async-db-1-FLINK-1.10_2.11.jar --bootstrap.servers kafka:9092 --checkpointing --event-time
 flink run -d -p 2 /opt/apps/flink-playground-clickcountjob-1-FLINK-1.10_2.11.jar --bootstrap.servers kafka:9092 --checkpointing --event-time
-flink run -d -p 2 /opt/apps/flink-playground-example01--1-FLINK-1.10_2.11.jar
+flink run -d -p 2 /opt/apps/flink-playground-example01-1-FLINK-1.10_2.11.jar
 ```
 
 ## Monitoring
