@@ -1,4 +1,4 @@
-package org.apache.flink.playgrounds.ops.records;
+package org.apache.flink.playgrounds.ops.entity;
 
 import lombok.Getter;
 

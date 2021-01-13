@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.util.Collections;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.playgrounds.ops.records.Database;
+import org.apache.flink.playgrounds.ops.entity.Database;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
 

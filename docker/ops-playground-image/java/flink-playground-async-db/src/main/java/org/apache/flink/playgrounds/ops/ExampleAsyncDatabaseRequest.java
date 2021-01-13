@@ -6,7 +6,7 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.playgrounds.ops.function.AsyncDatabaseRequest;
 import org.apache.flink.playgrounds.ops.records.ClickEvent;
 import org.apache.flink.playgrounds.ops.records.ClickEventDeserializationSchema;
-import org.apache.flink.playgrounds.ops.records.Database;
+import org.apache.flink.playgrounds.ops.entity.Database;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
